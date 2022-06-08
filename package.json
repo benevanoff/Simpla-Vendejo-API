@@ -1,0 +1,17 @@
+{
+  "name": "simpla-vendejo-api",
+  "version": "0.1.0",
+  "description": "A simple backend app for managing payments made with Monero (XMR)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "benevanoff",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "monero-javascript": "^0.7.0",
+    "mysql": "^2.18.1"
+  }
+}
