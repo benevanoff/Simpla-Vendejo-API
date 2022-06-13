@@ -35,28 +35,36 @@ const run_wallet = async function(file, pwd, uri, db) {
       let txHash = output.getTx().getHash();
       console.log("Found " + txHash)
 
-      let addresses_paid = [];
+      let transfers_found = [];
       db.query('SELECT * FROM payments WHERE seen IS NULL', async function (error, unpaid_invoices, fields) {
         if (error) {
           console.log(error);
           return;
         }
         let incoming_txs = await wallet.getIncomingTransfers();
-        console.log(incoming_txs);
         incoming_txs.forEach(transfer => {
           let transfer_addr = transfer.getAddress();
+          let transfer_amount = transfer.getAmount();
+          let transfer_decimal = transfer_amount.toJSValue()/1000000000000;
+          let transfer_confirmations = transfer.getTx().getNumConfirmations();
+          
           unpaid_invoices.forEach(db_payments_row => {
-            if (transfer_addr == db_payments_row["address"]) addresses_paid.push(transfer_addr);
+            if (transfer_addr == db_payments_row["address"]) {
+              let entry = {"address" : transfer_addr, "amount" : transfer_decimal, "confirmations" : transfer_confirmations};
+              console.log(entry);
+              transfers_found.push(entry);
+            }
           });
-        });
-      });
-
-      addresses_paid.forEach(address => {
-        db.query('UPDATE payments SET seen=1 WHERE address="'+ address +'"', function (error, results, fields) {
-          if (error) {
-            console.log(error);
-            return;
-          }
+          transfers_found.forEach(transfer => {
+            let update_query = transfer["confirmations"] >= 10 ? 'UPDATE payments SET seen='+transfer["amount"]+',10conf='+transfer["amount"]+' WHERE address="'+transfer["address"]+'"' : 'UPDATE payments SET seen='+transfer["amount"]+' WHERE address="'+transfer["address"]+'"';
+            console.log(update_query);
+            db.query(update_query, function (error, results, fields) {
+              if (error) {
+                console.log(error);
+                return;
+              }
+            });
+          });
         });
       });
     }
@@ -107,11 +115,11 @@ app.post('/payment_status', (req, res) => {
         console.log(results);
         if (results[0]["seen"] != null) seen = results[0]["seen"];
         if (results[0]["10conf"] != null) tenConf = results[0]["10conf"];
-        res.send('{ seen : '+seen+', 10conf :'+tenConf+'}');
+        res.send('{ "seen": '+seen+', "10conf": '+tenConf+' }');
       });
     } else res.sendStatus(500);
   });
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
-})
+});
