@@ -102,9 +102,9 @@ app.post('/create_invoice', (req, res) => {
     res.sendStatus(200);
   });
 
-app.post('/payment_status', (req, res) => {
-    if (req.body.order_id) {
-      const order_id = req.body.order_id;
+app.get('/payment_status/:order_id', (req, res) => {
+    if (req.params.order_id) {
+      const order_id = req.params.order_id;
       let seen = false;
       let tenConf = false;
       db.query('SELECT * FROM payments WHERE order_id='+order_id, function (error, results, fields) {
