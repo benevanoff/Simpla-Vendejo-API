@@ -36,7 +36,7 @@ const run_wallet = async function(file, pwd, uri, db) {
       console.log("Found " + txHash)
 
       let transfers_found = [];
-      db.query('SELECT * FROM payments WHERE seen IS NULL', async function (error, unpaid_invoices, fields) {
+      db.query('SELECT * FROM payments WHERE seen IS NULL OR 10conf IS NULL', async function (error, unpaid_invoices, fields) {
         if (error) {
           console.log(error);
           return;
