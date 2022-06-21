@@ -107,7 +107,7 @@ app.get('/payment_status/:order_id', (req, res) => {
       const order_id = req.params.order_id;
       let seen = false;
       let tenConf = false;
-      db.query('SELECT * FROM payments WHERE order_id='+order_id, function (error, results, fields) {
+      db.query('SELECT * FROM payments WHERE order_id=?', order_id, function (error, results, fields) {
         if (error) {
           console.log(error);
           res.send(500);
